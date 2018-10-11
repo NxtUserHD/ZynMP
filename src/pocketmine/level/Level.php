@@ -872,15 +872,11 @@ class Level implements ChunkManager, Metadatable{
 				$pk->z = $b->z;
 
 				if($b instanceof Block){
-					$blockId = $b->getId();
-					$blockData = $b->getDamage();
+					$pk->blockRuntimeId = $b->getRuntimeId();
 				}else{
 					$fullBlock = $this->getFullBlock($b->x, $b->y, $b->z);
-					$blockId = $fullBlock >> 4;
-					$blockData = $fullBlock & 0xf;
+					$pk->blockRuntimeId = BlockFactory::toStaticRuntimeId($fullBlock >> 4,  $fullBlock & 0xf);
 				}
-
-				$pk->blockRuntimeId = BlockFactory::toStaticRuntimeId($blockId, $blockData);
 
 				$pk->flags = $first ? $flags : UpdateBlockPacket::FLAG_NONE;
 
@@ -898,15 +894,11 @@ class Level implements ChunkManager, Metadatable{
 				$pk->z = $b->z;
 
 				if($b instanceof Block){
-					$blockId = $b->getId();
-					$blockData = $b->getDamage();
+					$pk->blockRuntimeId = $b->getRuntimeId();
 				}else{
 					$fullBlock = $this->getFullBlock($b->x, $b->y, $b->z);
-					$blockId = $fullBlock >> 4;
-					$blockData = $fullBlock & 0xf;
+					$pk->blockRuntimeId = BlockFactory::toStaticRuntimeId($fullBlock >> 4,  $fullBlock & 0xf);
 				}
-
-				$pk->blockRuntimeId = BlockFactory::toStaticRuntimeId($blockId, $blockData);
 
 				$pk->flags = $flags;
 
@@ -1776,7 +1768,7 @@ class Level implements ChunkManager, Metadatable{
 		}
 
 		if($player !== null){
-			$ev = new PlayerInteractEvent($player, $item, $blockClicked, $clickVector, $face, $blockClicked->getId() === 0 ? PlayerInteractEvent::RIGHT_CLICK_AIR : PlayerInteractEvent::RIGHT_CLICK_BLOCK);
+			$ev = new PlayerInteractEvent($player, $item, $blockClicked, $clickVector, $face, PlayerInteractEvent::RIGHT_CLICK_BLOCK);
 			if($this->checkSpawnProtection($player, $blockClicked)){
 				$ev->setCancelled(); //set it to cancelled so plugins can bypass this
 			}
@@ -1864,7 +1856,7 @@ class Level implements ChunkManager, Metadatable{
 		}
 
 		if($playSound){
-			$this->broadcastLevelSoundEvent($hand, LevelSoundEventPacket::SOUND_PLACE, 1, BlockFactory::toStaticRuntimeId($hand->getId(), $hand->getDamage()));
+			$this->broadcastLevelSoundEvent($hand, LevelSoundEventPacket::SOUND_PLACE, 1, $hand->getRuntimeId());
 		}
 
 		$item->pop();
