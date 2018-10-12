@@ -28,9 +28,6 @@ namespace pocketmine\network\mcpe\protocol;
 
 use pocketmine\network\mcpe\NetworkSession;
 
-/**
- * Superseded by NetworkChunkPublisherUpdatePacket, expected to be removed
- */
 class ChunkRadiusUpdatedPacket extends DataPacket{
 	public const NETWORK_ID = ProtocolInfo::CHUNK_RADIUS_UPDATED_PACKET;
 
