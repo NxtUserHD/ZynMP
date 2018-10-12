@@ -25,27 +25,31 @@ namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
 
-
 use pocketmine\network\mcpe\NetworkSession;
 
-/**
- * Superseded by NetworkChunkPublisherUpdatePacket, expected to be removed
- */
-class ChunkRadiusUpdatedPacket extends DataPacket{
-	public const NETWORK_ID = ProtocolInfo::CHUNK_RADIUS_UPDATED_PACKET;
+class NetworkChunkPublisherUpdatePacket extends DataPacket{
+	public const NETWORK_ID = ProtocolInfo::NETWORK_CHUNK_PUBLISHER_UPDATE_PACKET;
 
+	/** @var int */
+	public $x;
+	/** @var int */
+	public $y;
+	/** @var int */
+	public $z;
 	/** @var int */
 	public $radius;
 
 	protected function decodePayload(){
-		$this->radius = $this->getVarInt();
+		$this->getSignedBlockPosition($this->x, $this->y, $this->z);
+		$this->radius = $this->getUnsignedVarInt();
 	}
 
 	protected function encodePayload(){
-		$this->putVarInt($this->radius);
+		$this->putSignedBlockPosition($this->x, $this->y, $this->z);
+		$this->putUnsignedVarInt($this->radius);
 	}
 
 	public function handle(NetworkSession $session) : bool{
-		return $session->handleChunkRadiusUpdated($this);
+		return $session->handleNetworkChunkPublisherUpdate($this);
 	}
 }

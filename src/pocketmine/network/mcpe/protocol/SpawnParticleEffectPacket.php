@@ -25,27 +25,33 @@ namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
 
-
+use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\NetworkSession;
+use pocketmine\network\mcpe\protocol\types\DimensionIds;
 
-/**
- * Superseded by NetworkChunkPublisherUpdatePacket, expected to be removed
- */
-class ChunkRadiusUpdatedPacket extends DataPacket{
-	public const NETWORK_ID = ProtocolInfo::CHUNK_RADIUS_UPDATED_PACKET;
+class SpawnParticleEffectPacket extends DataPacket{
+	public const NETWORK_ID = ProtocolInfo::SPAWN_PARTICLE_EFFECT_PACKET;
 
 	/** @var int */
-	public $radius;
+	public $dimensionId = DimensionIds::OVERWORLD; //wtf mojang
+	/** @var Vector3 */
+	public $position;
+	/** @var string */
+	public $particleName;
 
 	protected function decodePayload(){
-		$this->radius = $this->getVarInt();
+		$this->dimensionId = $this->getByte();
+		$this->position = $this->getVector3();
+		$this->particleName = $this->getString();
 	}
 
 	protected function encodePayload(){
-		$this->putVarInt($this->radius);
+		$this->putByte($this->dimensionId);
+		$this->putVector3($this->position);
+		$this->putString($this->particleName);
 	}
 
 	public function handle(NetworkSession $session) : bool{
-		return $session->handleChunkRadiusUpdated($this);
+		return $session->handleSpawnParticleEffect($this);
 	}
 }

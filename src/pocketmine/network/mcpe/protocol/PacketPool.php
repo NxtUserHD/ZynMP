@@ -147,6 +147,10 @@ class PacketPool{
 		static::registerPacket(new UpdateSoftEnumPacket());
 		static::registerPacket(new NetworkStackLatencyPacket());
 		static::registerPacket(new ScriptCustomEventPacket());
+		static::registerPacket(new SpawnParticleEffectPacket());
+		static::registerPacket(new AvailableEntityIdentifiersPacket());
+		static::registerPacket(new LevelSoundEventPacketV2());
+		static::registerPacket(new NetworkChunkPublisherUpdatePacket());
 
 		static::registerPacket(new BatchPacket());
 	}
@@ -176,4 +180,5 @@ class PacketPool{
 
 		return $pk;
 	}
+
 }

@@ -44,6 +44,7 @@ use pocketmine\network\mcpe\protocol\InteractPacket;
 use pocketmine\network\mcpe\protocol\InventoryTransactionPacket;
 use pocketmine\network\mcpe\protocol\ItemFrameDropItemPacket;
 use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
+use pocketmine\network\mcpe\protocol\LevelSoundEventPacketV2;
 use pocketmine\network\mcpe\protocol\LoginPacket;
 use pocketmine\network\mcpe\protocol\MapInfoRequestPacket;
 use pocketmine\network\mcpe\protocol\MobArmorEquipmentPacket;
@@ -278,5 +279,9 @@ class PlayerNetworkSessionAdapter extends NetworkSession{
 
 	public function handleServerSettingsRequest(ServerSettingsRequestPacket $packet) : bool{
 		return false; //TODO: GUI stuff
+	}
+
+	public function handleLevelSoundEventPacketV2(LevelSoundEventPacketV2 $packet) : bool{
+		return $this->player->handleLevelSoundEventV2($packet);
 	}
 }
