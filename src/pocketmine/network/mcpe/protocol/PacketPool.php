@@ -151,6 +151,7 @@ class PacketPool{
 		static::registerPacket(new AvailableEntityIdentifiersPacket());
 		static::registerPacket(new LevelSoundEventPacketV2());
 		static::registerPacket(new NetworkChunkPublisherUpdatePacket());
+		static::registerPacket(new BiomeDefinitionListPacket());
 
 		static::registerPacket(new BatchPacket());
 	}

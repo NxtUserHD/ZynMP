@@ -39,15 +39,15 @@ interface ProtocolInfo{
 	/**
 	 * Actual Minecraft: PE protocol version
 	 */
-	public const CURRENT_PROTOCOL = 310;
+	public const CURRENT_PROTOCOL = 311;
 	/**
 	 * Current Minecraft PE version reported by the server. This is usually the earliest currently supported version.
 	 */
-	public const MINECRAFT_VERSION = 'v1.8.0.8 beta';
+	public const MINECRAFT_VERSION = 'v1.8.0.10 beta';
 	/**
 	 * Version number sent to clients in ping responses.
 	 */
-	public const MINECRAFT_VERSION_NETWORK = '1.8.0.8';
+	public const MINECRAFT_VERSION_NETWORK = '1.8.0.10';
 
 	public const LOGIN_PACKET = 0x01;
 	public const PLAY_STATUS_PACKET = 0x02;
@@ -170,5 +170,6 @@ interface ProtocolInfo{
 	public const AVAILABLE_ENTITY_IDENTIFIERS_PACKET = 0x77;
 	public const LEVEL_SOUND_EVENT_PACKET_V2 = 0x78;
 	public const NETWORK_CHUNK_PUBLISHER_UPDATE_PACKET = 0x79;
+	public const BIOME_DEFINITION_LIST_PACKET = 0x7a;
 
 }
