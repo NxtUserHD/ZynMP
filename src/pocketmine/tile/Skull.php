@@ -23,11 +23,7 @@ declare(strict_types=1);
 
 namespace pocketmine\tile;
 
-use pocketmine\item\Item;
-use pocketmine\math\Facing;
-use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\Player;
 
 class Skull extends Spawnable{
 	public const TYPE_SKELETON = 0;
@@ -43,13 +39,13 @@ class Skull extends Spawnable{
 	public const TAG_MOUTH_TICK_COUNT = "MouthTickCount"; //TAG_Int
 
 	/** @var int */
-	private $skullType;
+	private $skullType = self::TYPE_SKELETON;
 	/** @var int */
-	private $skullRotation;
+	private $skullRotation = 0;
 
 	protected function readSaveData(CompoundTag $nbt) : void{
-		$this->skullType = $nbt->getByte(self::TAG_SKULL_TYPE, self::TYPE_SKELETON, true);
-		$this->skullRotation = $nbt->getByte(self::TAG_ROT, 0, true);
+		$this->skullType = $nbt->getByte(self::TAG_SKULL_TYPE, $this->skullType, true);
+		$this->skullRotation = $nbt->getByte(self::TAG_ROT, $this->skullRotation, true);
 	}
 
 	protected function writeSaveData(CompoundTag $nbt) : void{
@@ -66,18 +62,17 @@ class Skull extends Spawnable{
 		return $this->skullType;
 	}
 
+	public function getRotation() : int{
+		return $this->skullRotation;
+	}
+
+	public function setRotation(int $rotation) : void{
+		$this->skullRotation = $rotation;
+		$this->onChanged();
+	}
+
 	protected function addAdditionalSpawnData(CompoundTag $nbt) : void{
 		$nbt->setByte(self::TAG_SKULL_TYPE, $this->skullType);
 		$nbt->setByte(self::TAG_ROT, $this->skullRotation);
-	}
-
-	protected static function createAdditionalNBT(CompoundTag $nbt, Vector3 $pos, ?int $face = null, ?Item $item = null, ?Player $player = null) : void{
-		$nbt->setByte(self::TAG_SKULL_TYPE, $item !== null ? $item->getDamage() : self::TYPE_SKELETON);
-
-		$rot = 0;
-		if($face === Facing::UP and $player !== null){
-			$rot = floor(($player->yaw * 16 / 360) + 0.5) & 0x0F;
-		}
-		$nbt->setByte(self::TAG_ROT, $rot);
 	}
 }

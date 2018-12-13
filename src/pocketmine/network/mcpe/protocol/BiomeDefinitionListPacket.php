@@ -21,13 +21,27 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\block;
+namespace pocketmine\network\mcpe\protocol;
 
-class StillWater extends Water{
+#include <rules/DataPacket.h>
 
-	protected $id = self::STILL_WATER;
+use pocketmine\network\mcpe\handler\SessionHandler;
 
-	public function getName() : string{
-		return "Still Water";
+class BiomeDefinitionListPacket extends DataPacket{
+	public const NETWORK_ID = ProtocolInfo::BIOME_DEFINITION_LIST_PACKET;
+
+	/** @var string */
+	public $namedtag;
+
+	protected function decodePayload() : void{
+		$this->namedtag = $this->getRemaining();
+	}
+
+	protected function encodePayload() : void{
+		$this->put($this->namedtag);
+	}
+
+	public function handle(SessionHandler $handler) : bool{
+		return $handler->handleBiomeDefinitionList($this);
 	}
 }

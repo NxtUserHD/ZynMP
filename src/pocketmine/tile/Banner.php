@@ -23,18 +23,16 @@ declare(strict_types=1);
 
 namespace pocketmine\tile;
 
-use pocketmine\item\Item;
+use pocketmine\level\Level;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\ListTag;
 use pocketmine\nbt\tag\StringTag;
-use pocketmine\Player;
 
 class Banner extends Spawnable implements Nameable{
 	use NameableTrait {
 		addAdditionalSpawnData as addNameSpawnData;
-		createAdditionalNBT as createNameNBT;
 	}
 
 	public const TAG_BASE = "Base";
@@ -99,16 +97,21 @@ class Banner extends Spawnable implements Nameable{
 	public const COLOR_WHITE = 15;
 
 	/** @var int */
-	private $baseColor;
+	private $baseColor = self::COLOR_BLACK;
 	/**
 	 * @var ListTag
 	 * TODO: break this down further and remove runtime NBT from here entirely
 	 */
 	private $patterns;
 
+	public function __construct(Level $level, Vector3 $pos){
+		$this->patterns = new ListTag(self::TAG_PATTERNS);
+		parent::__construct($level, $pos);
+	}
+
 	protected function readSaveData(CompoundTag $nbt) : void{
-		$this->baseColor = $nbt->getInt(self::TAG_BASE, self::COLOR_BLACK, true);
-		$this->patterns = $nbt->getListTag(self::TAG_PATTERNS) ?? new ListTag(self::TAG_PATTERNS);
+		$this->baseColor = $nbt->getInt(self::TAG_BASE, $this->baseColor, true);
+		$this->patterns = $nbt->getListTag(self::TAG_PATTERNS) ?? $this->patterns;
 		$this->loadName($nbt);
 	}
 
@@ -268,16 +271,9 @@ class Banner extends Spawnable implements Nameable{
 		return $this->patterns;
 	}
 
-	protected static function createAdditionalNBT(CompoundTag $nbt, Vector3 $pos, ?int $face = null, ?Item $item = null, ?Player $player = null) : void{
-		$nbt->setInt(self::TAG_BASE, $item !== null ? $item->getDamage() & 0x0f : 0);
-
-		if($item !== null){
-			if($item->getNamedTag()->hasTag(self::TAG_PATTERNS, ListTag::class)){
-				$nbt->setTag($item->getNamedTag()->getListTag(self::TAG_PATTERNS));
-			}
-
-			self::createNameNBT($nbt, $pos, $face, $item, $player);
-		}
+	public function setPatterns(ListTag $patterns) : void{
+		$this->patterns = clone $patterns;
+		$this->onChanged();
 	}
 
 	public function getDefaultName() : string{

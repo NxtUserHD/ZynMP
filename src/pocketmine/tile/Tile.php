@@ -33,10 +33,6 @@ use pocketmine\level\Level;
 use pocketmine\level\Position;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\IntTag;
-use pocketmine\nbt\tag\StringTag;
-use pocketmine\Player;
-use pocketmine\Server;
 use pocketmine\timings\Timings;
 use pocketmine\timings\TimingsHandler;
 use pocketmine\utils\Utils;
@@ -67,11 +63,9 @@ abstract class Tile extends Position{
 	private static $saveNames = [];
 
 	/** @var string */
-	public $name;
+	public $name = "";
 	/** @var bool */
 	public $closed = false;
-	/** @var Server */
-	protected $server;
 	/** @var TimingsHandler */
 	protected $timings;
 
@@ -89,18 +83,59 @@ abstract class Tile extends Position{
 	}
 
 	/**
-	 * @param string      $type
 	 * @param Level       $level
 	 * @param CompoundTag $nbt
-	 * @param             $args
 	 *
 	 * @return Tile|null
 	 */
-	public static function createTile($type, Level $level, CompoundTag $nbt, ...$args) : ?Tile{
+	public static function createFromData(Level $level, CompoundTag $nbt) : ?Tile{
+		$type = $nbt->getString(self::TAG_ID, "", true);
+		if($type === ""){
+			return null;
+		}
+		$tile = self::create($type, $level, new Vector3($nbt->getInt(self::TAG_X), $nbt->getInt(self::TAG_Y), $nbt->getInt(self::TAG_Z)));
+		if($tile !== null){
+			$tile->readSaveData($nbt);
+		}
+		return $tile;
+	}
+
+	/**
+	 * @param string  $type
+	 * @param Level   $level
+	 * @param Vector3 $pos
+	 * @param Item    $item
+	 *
+	 * @return Tile|null
+	 */
+	public static function createFromItem(string $type, Level $level, Vector3 $pos, Item $item) : ?Tile{
+		$tile = self::create($type, $level, $pos);
+		if($tile !== null and $item->hasCustomBlockData()){
+			$tile->readSaveData($item->getCustomBlockData());
+		}
+		if($tile instanceof Nameable and $item->hasCustomName()){ //this should take precedence over saved NBT
+			$tile->setName($item->getCustomName());
+		}
+
+		return $tile;
+	}
+
+	/**
+	 * @param string  $type
+	 * @param Level   $level
+	 * @param Vector3 $pos
+	 *
+	 * @return Tile|null
+	 */
+	public static function create(string $type, Level $level, Vector3 $pos) : ?Tile{
 		if(isset(self::$knownTiles[$type])){
 			$class = self::$knownTiles[$type];
-			/** @see Tile::__construct() */
-			return new $class($level, $nbt, ...$args);
+			/**
+			 * @var Tile $tile
+			 * @see Tile::__construct()
+			 */
+			$tile = new $class($level, $pos);
+			return $tile;
 		}
 
 		return null;
@@ -138,16 +173,9 @@ abstract class Tile extends Position{
 		return current(self::$saveNames[static::class]);
 	}
 
-	public function __construct(Level $level, CompoundTag $nbt){
+	public function __construct(Level $level, Vector3 $pos){
 		$this->timings = Timings::getTileEntityTimings($this);
-
-		$this->server = $level->getServer();
-		$this->name = "";
-
-		parent::__construct($nbt->getInt(self::TAG_X), $nbt->getInt(self::TAG_Y), $nbt->getInt(self::TAG_Z), $level);
-		$this->readSaveData($nbt);
-
-		$this->getLevel()->addTile($this);
+		parent::__construct($pos->getFloorX(), $pos->getFloorY(), $pos->getFloorZ(), $level);
 	}
 
 	/**
@@ -178,54 +206,6 @@ abstract class Tile extends Position{
 	public function getCleanedNBT() : ?CompoundTag{
 		$this->writeSaveData($tag = new CompoundTag());
 		return $tag->getCount() > 0 ? $tag : null;
-	}
-
-	/**
-	 * Creates and returns a CompoundTag containing the necessary information to spawn a tile of this type.
-	 *
-	 * @param Vector3     $pos
-	 * @param int|null    $face
-	 * @param Item|null   $item
-	 * @param Player|null $player
-	 *
-	 * @return CompoundTag
-	 */
-	public static function createNBT(Vector3 $pos, ?int $face = null, ?Item $item = null, ?Player $player = null) : CompoundTag{
-		if(static::class === self::class){
-			throw new \BadMethodCallException(__METHOD__ . " must be called from the scope of a child class");
-		}
-		$nbt = new CompoundTag("", [
-			new StringTag(self::TAG_ID, static::getSaveId()),
-			new IntTag(self::TAG_X, (int) $pos->x),
-			new IntTag(self::TAG_Y, (int) $pos->y),
-			new IntTag(self::TAG_Z, (int) $pos->z)
-		]);
-
-		static::createAdditionalNBT($nbt, $pos, $face, $item, $player);
-
-		if($item !== null){
-			$customBlockData = $item->getCustomBlockData();
-			if($customBlockData !== null){
-				foreach($customBlockData as $customBlockDataTag){
-					$nbt->setTag(clone $customBlockDataTag);
-				}
-			}
-		}
-
-		return $nbt;
-	}
-
-	/**
-	 * Called by createNBT() to allow descendent classes to add their own base NBT using the parameters provided.
-	 *
-	 * @param CompoundTag $nbt
-	 * @param Vector3     $pos
-	 * @param int|null    $face
-	 * @param Item|null   $item
-	 * @param Player|null $player
-	 */
-	protected static function createAdditionalNBT(CompoundTag $nbt, Vector3 $pos, ?int $face = null, ?Item $item = null, ?Player $player = null) : void{
-
 	}
 
 	/**
